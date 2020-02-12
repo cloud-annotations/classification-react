@@ -1,74 +1,298 @@
 body {
-  color: rgba(64, 64, 64, 0.65);
-  font: 500 1em Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizelegibility;
   margin: 0;
   padding: 0;
-}
-
-*:focus {
-  outline: none !important;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  font-family: "ibm-plex-sans", Helvetica Neue, Arial, sans-serif;
+  /* text-rendering: optimizelegibility; */
+  background-color: hsl(210, 17%, 98%);
+  color: rgba(0, 0, 0, 1);
+  --detailText: rgba(0, 0, 0, 0.53);
+  --textInput: #f3f3f3;
+  --textInputUnderline: #a7a7a7;
+  --highlight: #eef4fc;
 }
 
 * {
   box-sizing: border-box;
 }
 
-.Dropzone-img {
-  max-width: calc(100vw - 60px);
-  max-height: calc(100vw - 60px);
-  width: 448px;
-  height: 448px;
-  border: thin solid rgba(64, 64, 64, 0.15);
-  border-radius: 4px;
-  object-fit: cover;
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Light.woff")
+    format("woff");
 }
 
-.Dropzone {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: thin dashed #c2c2c2;
-  background: #fcfcfc;
-  max-width: calc(100vw - 40px);
-  max-height: calc(100vw - 40px);
-  width: 468px;
-  height: 468px;
-  padding: 10px;
-  border-radius: 5px;
-  position: relative;
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Light-Pi.woff2")
+    format("woff2");
+  unicode-range: "U+03C0, U+0E3F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+221A, U+221E, U+222B, U+2248, U+2260, U+2264-2265, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+EBE1, U+EBE3-EBE4, U+EBE6-EBE7, U+ECE0, U+EFCC";
 }
 
-.Dropzone-page {
-  margin: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Light-Latin3.woff2")
+    format("woff2");
+  unicode-range: "U+0102-0103, U+1EA0-1EF9, U+20AB";
 }
 
-.prediction {
-  max-width: calc(100vw - 40px);
-  width: 468px;
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 10px 0 10px;
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Light-Latin2.woff2")
+    format("woff2");
+  unicode-range: "U+0100-024F, U+0259, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF, U+FB01-FB02";
 }
 
-#xcanvas {
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Light-Latin1.woff2")
+    format("woff2");
+  unicode-range: "U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FB01-FB02";
 }
 
-#canvas {
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Regular.woff")
+    format("woff");
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Regular-Pi.woff2")
+    format("woff2");
+  unicode-range: "U+03C0, U+0E3F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+221A, U+221E, U+222B, U+2248, U+2260, U+2264-2265, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+EBE1, U+EBE3-EBE4, U+EBE6-EBE7, U+ECE0, U+EFCC";
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Regular-Latin3.woff2")
+    format("woff2");
+  unicode-range: "U+0102-0103, U+1EA0-1EF9, U+20AB";
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Regular-Latin2.woff2")
+    format("woff2");
+  unicode-range: "U+0100-024F, U+0259, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-Regular-Latin1.woff2")
+    format("woff2");
+  unicode-range: "U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-SemiBold.woff")
+    format("woff");
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-SemiBold-Pi.woff2")
+    format("woff2");
+  unicode-range: "U+03C0, U+0E3F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+221A, U+221E, U+222B, U+2248, U+2260, U+2264-2265, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+EBE1, U+EBE3-EBE4, U+EBE6-EBE7, U+ECE0, U+EFCC";
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-SemiBold-Latin3.woff2")
+    format("woff2");
+  unicode-range: "U+0102-0103, U+1EA0-1EF9, U+20AB";
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-SemiBold-Latin2.woff2")
+    format("woff2");
+  unicode-range: "U+0100-024F, U+0259, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-mono";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexMono-SemiBold-Latin1.woff2")
+    format("woff2");
+  unicode-range: "U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Light.woff")
+    format("woff");
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Light-Pi.woff2")
+    format("woff2");
+  unicode-range: "U+03C0, U+0E3F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+221A, U+221E, U+222B, U+2248, U+2260, U+2264-2265, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+EBE1, U+EBE3-EBE4, U+EBE6-EBE7, U+ECE0, U+EFCC";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Light-Latin3.woff2")
+    format("woff2");
+  unicode-range: "U+0102-0103, U+1EA0-1EF9, U+20AB";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Light-Latin2.woff2")
+    format("woff2");
+  unicode-range: "U+0100-024F, U+0259, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 300;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Light-Latin1.woff2")
+    format("woff2");
+  unicode-range: "U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Regular.woff")
+    format("woff");
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Regular-Pi.woff2")
+    format("woff2");
+  unicode-range: "U+03C0, U+0E3F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+221A, U+221E, U+222B, U+2248, U+2260, U+2264-2265, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+EBE1, U+EBE3-EBE4, U+EBE6-EBE7, U+ECE0, U+EFCC";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Regular-Latin3.woff2")
+    format("woff2");
+  unicode-range: "U+0102-0103, U+1EA0-1EF9, U+20AB";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Regular-Latin2.woff2")
+    format("woff2");
+  unicode-range: "U+0100-024F, U+0259, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 400;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-Regular-Latin1.woff2")
+    format("woff2");
+  unicode-range: "U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-SemiBold.woff")
+    format("woff");
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-SemiBold-Pi.woff2")
+    format("woff2");
+  unicode-range: "U+03C0, U+0E3F, U+2070, U+2074-2079, U+2080-2089, U+2113, U+2116, U+2126, U+212E, U+2150-2151, U+2153-215E, U+2190-2199, U+21A9-21AA, U+21B0-21B3, U+21B6-21B7, U+21BA-21BB, U+21C4, U+21C6, U+2202, U+2206, U+220F, U+2211, U+221A, U+221E, U+222B, U+2248, U+2260, U+2264-2265, U+25CA, U+2713, U+274C, U+2B0E-2B11, U+EBE1, U+EBE3-EBE4, U+EBE6-EBE7, U+ECE0, U+EFCC";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-SemiBold-Latin3.woff2")
+    format("woff2");
+  unicode-range: "U+0102-0103, U+1EA0-1EF9, U+20AB";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-SemiBold-Latin2.woff2")
+    format("woff2");
+  unicode-range: "U+0100-024F, U+0259, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 600;
+  src: url("https://unpkg.com/carbon-components@latest/src/globals/fonts/IBMPlexSans-SemiBold-Latin1.woff2")
+    format("woff2");
+  unicode-range: "U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212, U+FB01-FB02";
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: normal;
+  font-weight: 500;
+  src: url("https://raw.githubusercontent.com/IBM/plex/master/IBM-Plex-Sans/fonts/complete/woff/IBMPlexSans-Medium.woff")
+    format("woff");
+}
+
+@font-face {
+  font-family: "ibm-plex-sans";
+  font-style: italic;
+  font-weight: 500;
+  src: url("https://raw.githubusercontent.com/IBM/plex/master/IBM-Plex-Sans/fonts/complete/woff/IBMPlexSans-MediumItalic.woff")
+    format("woff");
 }

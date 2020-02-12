@@ -1,137 +1,248 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
-import MagicDropzone from 'react-magic-dropzone'
+import React, { useState, useCallback, useEffect } from "react";
+import ReactDOM from "react-dom";
 
-import * as tf from '@tensorflow/tfjs'
-import './styles.css'
+import MagicDropzone from "react-magic-dropzone";
+import models from "@cloud-annotations/models";
 
-const MODEL_URL = process.env.PUBLIC_URL + '/model_web/'
-const LABELS_URL = MODEL_URL + 'labels.json'
-const MODEL_JSON = MODEL_URL + 'model.json'
+import styles from "./App.module.css";
+import "./styles.css";
 
-const TFWrapper = model => {
-  const detect = input => {
-    const batched = tf.tidy(() => {
-      const img = tf.browser.fromPixels(input)
-      // Reshape to a single-element batch so we can pass it to executeAsync.
-      return img.expandDims(0).toFloat()
-    })
-
-    return model.execute(batched).dataSync()
-  }
-
+const getRetinaContext = canvas => {
+  const ctx = canvas.getContext("2d");
+  const scale = window.devicePixelRatio;
+  let width = canvas.width / scale;
+  let height = canvas.height / scale;
   return {
-    detect: detect
-  }
-}
-
-class App extends React.Component {
-  state = {
-    model: null,
-    labels: null
-  }
-
-  componentDidMount() {
-    const modelPromise = tf.loadGraphModel(MODEL_JSON)
-    const labelsPromise = fetch(LABELS_URL).then(data => data.json())
-    Promise.all([modelPromise, labelsPromise])
-      .then(values => {
-        const [model, labels] = values
-        this.setState({
-          model: model,
-          labels: labels
-        })
-      })
-      .catch(error => {
-        console.error(error)
-      })
-  }
-
-  cropToCanvas = (image, canvas, ctx) => {
-    const naturalWidth = image.naturalWidth
-    const naturalHeight = image.naturalHeight
-
-    canvas.width = 224 // image.width
-    canvas.height = 224 // image.height
-
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    if (naturalWidth > naturalHeight) {
-      ctx.drawImage(
-        image,
-        (naturalWidth - naturalHeight) / 2,
-        0,
-        naturalHeight,
-        naturalHeight,
-        0,
-        0,
-        ctx.canvas.width,
-        ctx.canvas.height
-      )
-    } else {
-      ctx.drawImage(
-        image,
-        0,
-        (naturalHeight - naturalWidth) / 2,
-        naturalWidth,
-        naturalWidth,
-        0,
-        0,
-        ctx.canvas.width,
-        ctx.canvas.height
-      )
+    setWidth: w => {
+      width = w;
+      canvas.style.width = w + "px";
+      canvas.width = w * scale;
+    },
+    setHeight: h => {
+      height = h;
+      canvas.style.height = h + "px";
+      canvas.height = h * scale;
+    },
+    width: width,
+    height: height,
+    clearAll: () => {
+      return ctx.clearRect(0, 0, width * scale, height * scale);
+    },
+    clearRect: (x, y, width, height) => {
+      return ctx.clearRect(x * scale, y * scale, width * scale, height * scale);
+    },
+    setFont: font => {
+      const size = parseInt(font, 10) * scale;
+      const retinaFont = font.replace(/^\d+px/, size + "px");
+      ctx.font = retinaFont;
+    },
+    setTextBaseLine: textBaseline => {
+      ctx.textBaseline = textBaseline;
+    },
+    setStrokeStyle: strokeStyle => {
+      ctx.strokeStyle = strokeStyle;
+    },
+    setLineWidth: lineWidth => {
+      ctx.lineWidth = lineWidth * scale;
+    },
+    strokeRect: (x, y, width, height) => {
+      return ctx.strokeRect(
+        x * scale,
+        y * scale,
+        width * scale,
+        height * scale
+      );
+    },
+    setFillStyle: fillStyle => {
+      ctx.fillStyle = fillStyle;
+    },
+    measureText: text => {
+      const metrics = ctx.measureText(text);
+      return {
+        width: metrics.width / scale,
+        actualBoundingBoxLeft: metrics.actualBoundingBoxLeft / scale,
+        actualBoundingBoxRight: metrics.actualBoundingBoxRight / scale,
+        actualBoundingBoxAscent: metrics.actualBoundingBoxAscent / scale,
+        actualBoundingBoxDescent: metrics.actualBoundingBoxDescent / scale
+      };
+    },
+    fillRect: (x, y, width, height) => {
+      return ctx.fillRect(x * scale, y * scale, width * scale, height * scale);
+    },
+    fillText: (text, x, y) => {
+      return ctx.fillText(text, x * scale, y * scale);
     }
-  }
+  };
+};
 
-  onDrop = (accepted, _, links) => {
-    this.setState({ preview: accepted[0].preview || links[0] })
-  }
+const renderObjectDetection = (ctx, predictions) => {
+  ctx.clearAll();
+  // Font options.
+  const font = `${14}px 'ibm-plex-sans', Helvetica Neue, Arial, sans-serif`;
+  ctx.setFont(font);
+  ctx.setTextBaseLine("top");
+  const border = 2;
+  const xPadding = 8;
+  const yPadding = 4;
+  const offset = 2;
+  const textHeight = parseInt(font, 10); // base 10
 
-  onImageChange = e => {
-    const xc = document.createElement('CANVAS')
-    const xctx = xc.getContext('2d')
-    this.cropToCanvas(e.target, xc, xctx)
+  predictions.forEach(prediction => {
+    const x = prediction.bbox[0];
+    const y = prediction.bbox[1];
+    const width = prediction.bbox[2];
+    const height = prediction.bbox[3];
+    // Draw the bounding box.
+    ctx.setStrokeStyle("#0062ff");
+    ctx.setLineWidth(border);
 
-    const predictions = TFWrapper(this.state.model).detect(xc)
-    const i = predictions.indexOf(Math.max(...predictions))
+    ctx.strokeRect(
+      Math.round(x),
+      Math.round(y),
+      Math.round(width),
+      Math.round(height)
+    );
+    // Draw the label background.
+    ctx.setFillStyle("#0062ff");
+    const textWidth = ctx.measureText(prediction.label).width;
+    ctx.fillRect(
+      Math.round(x - border / 2),
+      Math.round(y - (textHeight + yPadding) - offset),
+      Math.round(textWidth + xPadding),
+      Math.round(textHeight + yPadding)
+    );
+  });
 
-    const c = document.getElementById('canvas')
-    const ctx = c.getContext('2d')
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    const font = '21px sans-serif'
-    ctx.font = font
-    ctx.fillStyle = '#ff0000'
-    ctx.fillText(this.state.labels[i], 30, 30)
-  }
+  predictions.forEach(prediction => {
+    const x = prediction.bbox[0];
+    const y = prediction.bbox[1];
+    // Draw the text last to ensure it's on top.
+    ctx.setFillStyle("#ffffff");
+    ctx.fillText(
+      prediction.label,
+      Math.round(x - border / 2 + xPadding / 2),
+      Math.round(y - (textHeight + yPadding) - offset + yPadding / 2)
+    );
+  });
+};
 
-  render() {
-    return (
-      <div className="Dropzone-page">
-        {this.state.model ? (
-          <MagicDropzone
-            className="Dropzone"
-            accept="image/jpeg, image/png, .jpg, .jpeg, .png"
-            multiple={false}
-            onDrop={this.onDrop}
-          >
-            {this.state.preview ? (
-              <img
-                alt="upload preview"
-                onLoad={this.onImageChange}
-                className="Dropzone-img"
-                src={this.state.preview}
-              />
-            ) : (
-              'Choose or drop a file.'
-            )}
-            <canvas id="canvas" />
-          </MagicDropzone>
+const renderClassification = (ctx, predictions) => {
+  ctx.clearAll();
+
+  const font = `${14}px 'ibm-plex-sans', Helvetica Neue, Arial, sans-serif`;
+  const textHeight = parseInt(font, 10); // base 10
+  const xPadding = 8;
+  const yPadding = 4;
+  const offset = 2;
+  ctx.setFont(font);
+  ctx.setTextBaseLine("top");
+
+  predictions
+    .filter(prediction => prediction.score > 0.5)
+    .forEach((prediction, i) => {
+      const label = `${prediction.label} ${(prediction.score * 100).toFixed(
+        1
+      )}%`;
+      // Draw the label background.
+      ctx.setFillStyle("#0062ff");
+      const textWidth = ctx.measureText(label).width;
+      ctx.fillRect(
+        Math.round(xPadding),
+        Math.round(xPadding + i * (textHeight + yPadding + offset)),
+        Math.round(textWidth + xPadding),
+        Math.round(textHeight + yPadding)
+      );
+      // Draw the text last to ensure it's on top.
+      ctx.setFillStyle("#ffffff");
+      ctx.fillText(
+        label,
+        Math.round(xPadding + 0 + xPadding / 2),
+        Math.round(
+          xPadding + i * (textHeight + yPadding + offset) + yPadding / 2
+        )
+      );
+    });
+};
+
+const App = () => {
+  const [model, setModel] = useState(undefined);
+  const [preview, setPreview] = useState(undefined);
+  const [resultsCanvas, setResultsCanvas] = useState(undefined);
+
+  useEffect(() => {
+    models.load("/model_web").then(async model => {
+      // warm up the model
+      const image = new ImageData(1, 1);
+      if (model.type === "detection") {
+        await model.detect(image);
+      } else {
+        await model.classify(image);
+      }
+      setModel(model);
+    });
+  }, []);
+
+  useEffect(() => {
+    setPreview(undefined);
+    if (resultsCanvas) {
+      const ctx = getRetinaContext(resultsCanvas);
+      ctx.clearAll();
+      ctx.setWidth(0);
+      ctx.setHeight(0);
+    }
+  }, [model, resultsCanvas]); // if model changes kill preview.
+
+  const onDrop = useCallback((accepted, _, links) => {
+    setPreview(accepted[0].preview || links[0]);
+  }, []);
+
+  const onImageChange = useCallback(
+    async e => {
+      const imgWidth = e.target.clientWidth;
+      const imgHeight = e.target.clientHeight;
+
+      const ctx = getRetinaContext(resultsCanvas);
+      ctx.setWidth(imgWidth);
+      ctx.setHeight(imgHeight);
+
+      if (model.type === "detection") {
+        const predictions = await model.detect(e.target);
+        renderObjectDetection(ctx, predictions);
+      } else {
+        const predictions = await model.classify(e.target);
+        renderClassification(ctx, predictions);
+      }
+    },
+    [model, resultsCanvas]
+  );
+
+  return (
+    <div className={styles.wrapper}>
+      <MagicDropzone
+        className={styles.dropzone}
+        accept="image/jpeg, image/png, .jpg, .jpeg, .png"
+        multiple={false}
+        onDrop={onDrop}
+      >
+        {preview ? (
+          <div className={styles.imageWrapper}>
+            <img
+              alt="upload preview"
+              onLoad={onImageChange}
+              className={styles.image}
+              src={preview}
+            />
+          </div>
+        ) : model !== undefined ? (
+          "Drag & Drop an Image to Test"
         ) : (
-          <div className="Dropzone">Loading model...</div>
+          "Loading model..."
         )}
-      </div>
-    )
-  }
-}
+        <canvas ref={setResultsCanvas} className={styles.canvas} />
+      </MagicDropzone>
+    </div>
+  );
+};
 
-const rootElement = document.getElementById('root')
-ReactDOM.render(<App />, rootElement)
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
